@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# DevInsights project-specific
+terraform.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+profiles.yml
+.env
+ml/models/
+.mypy_cache/
+.ruff_cache/
