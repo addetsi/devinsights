@@ -31,3 +31,8 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 ignore_missing_imports = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
