@@ -105,3 +105,57 @@ resource "azurerm_key_vault_secret" "eventhub_consumer" {
 
   depends_on = [azurerm_role_assignment.kv_admin]
 }
+
+
+resource "random_password" "sql_admin" {
+  length           = 24
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}"
+}
+
+resource "azurerm_mssql_server" "main" {
+  name                         = "sql-${var.project}-${var.environment}-${random_string.suffix.result}"
+  resource_group_name          = azurerm_resource_group.main.name
+  location                     = azurerm_resource_group.main.location
+  version                      = "12.0"
+  administrator_login          = "sqladmin"
+  administrator_login_password = random_password.sql_admin.result
+  tags                         = local.common_tags
+}
+
+resource "azurerm_mssql_database" "main" {
+  name      = "sqldb-${var.project}-${var.environment}"
+  server_id = azurerm_mssql_server.main.id
+  sku_name  = "Basic"
+  tags      = local.common_tags
+}
+
+resource "azurerm_key_vault_secret" "sql_admin_password" {
+  name         = "sql-admin-password"
+  value        = random_password.sql_admin.result
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [azurerm_role_assignment.kv_admin]
+}
+
+resource "azurerm_key_vault_secret" "sql_connection_string" {
+  name         = "sql-connection-string"
+  value        = "Server=tcp:${azurerm_mssql_server.main.fully_qualified_domain_name},1433;Database=${azurerm_mssql_database.main.name};User ID=sqladmin;Password=${random_password.sql_admin.result};Encrypt=true;"
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [azurerm_role_assignment.kv_admin]
+}
+
+resource "azurerm_mssql_firewall_rule" "allow_azure" {
+  name             = "AllowAzureServices"
+  server_id        = azurerm_mssql_server.main.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
+resource "azurerm_mssql_firewall_rule" "allow_my_ip" {
+  name             = "AllowMyIP"
+  server_id        = azurerm_mssql_server.main.id
+  start_ip_address = "141.93.243.1"
+  end_ip_address   = "141.93.243.1"
+}
