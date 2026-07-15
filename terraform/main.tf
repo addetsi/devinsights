@@ -52,3 +52,39 @@ resource "azurerm_role_assignment" "kv_admin" {
   role_definition_name = "Key Vault Secrets Officer"
   principal_id         = data.azurerm_client_config.current.object_id
 }
+
+resource "azurerm_eventhub_namespace" "main" {
+  name                = "evhn-${var.project}-${var.environment}-${random_string.suffix.result}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  sku                 = "Basic"
+  capacity            = 1
+  tags                = local.common_tags
+}
+
+resource "azurerm_eventhub" "github" {
+  name              = "github-events"
+  namespace_id      = azurerm_eventhub_namespace.main.id
+  partition_count   = 2
+  message_retention = 1
+}
+
+resource "azurerm_eventhub_authorization_rule" "producer" {
+  name                = "producer"
+  namespace_name      = azurerm_eventhub_namespace.main.name
+  eventhub_name       = azurerm_eventhub.github.name
+  resource_group_name = azurerm_resource_group.main.name
+  listen              = false
+  send                = true
+  manage              = false
+}
+
+resource "azurerm_eventhub_authorization_rule" "consumer" {
+  name                = "consumer"
+  namespace_name      = azurerm_eventhub_namespace.main.name
+  eventhub_name       = azurerm_eventhub.github.name
+  resource_group_name = azurerm_resource_group.main.name
+  listen              = true
+  send                = false
+  manage              = false
+}
