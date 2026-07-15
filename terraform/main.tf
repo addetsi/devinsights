@@ -52,3 +52,23 @@ resource "azurerm_role_assignment" "kv_admin" {
   role_definition_name = "Key Vault Secrets Officer"
   principal_id         = data.azurerm_client_config.current.object_id
 }
+
+resource "azurerm_key_vault_secret" "eventhub_producer" {
+  name         = "eventhub-producer-connection"
+  value        = azurerm_eventhub_authorization_rule.producer.primary_connection_string
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_admin
+  ]
+}
+
+resource "azurerm_key_vault_secret" "eventhub_consumer" {
+  name         = "eventhub-consumer-connection"
+  value        = azurerm_eventhub_authorization_rule.consumer.primary_connection_string
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_admin
+  ]
+}
