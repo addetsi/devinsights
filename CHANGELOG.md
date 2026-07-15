@@ -14,3 +14,14 @@ versioning follows [Semantic Versioning](https://semver.org/).
 - GitHub Actions CI pipeline (lint, format, type check, tests, pre-commit)
 - Branch protection and PR-based workflow
 - Makefile and pull request template
+
+## [0.2.0] - 2026-07-15
+
+### Added
+- Terraform foundation with remote state backend in Azure
+- Resource group and blob storage landing zone
+- Key Vault with RBAC authorization
+- Event Hubs namespace with scoped producer/consumer auth rules
+- Azure SQL Database with firewall rules
+- Connection strings and secrets stored in Key Vault
+- Terraform outputs for resource names
