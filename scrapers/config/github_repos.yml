@@ -1,0 +1,25 @@
+source: github
+api:
+  base_url: https://api.github.com
+  auth: token # uses GITHUB_TOKEN from environment/key vault
+
+kafka:
+  topic: github_events
+  bootstrap_servers: localhost:9092
+
+repositories:
+  - dbt-labs/dbt-core
+  - apache/kafka
+  - streamlit/streamlit
+  - hashicorp/terraform
+  - pallets/flask
+  - fastapi/fastapi
+
+endpoints:
+  - name: repo_metadata
+    path: /repos/{repo}
+    message_type: repo
+
+  - name: repo_requests
+    path: /repos/{repo}/pulls?state=all&per_page=50
+    message_type: pull_request
