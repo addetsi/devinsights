@@ -4,7 +4,7 @@ api:
   auth: token # uses GITHUB_TOKEN from environment/key vault
 
 kafka:
-  topic: github_events
+  topic: github-events
   bootstrap_servers: localhost:9092
 
 repositories:
@@ -20,6 +20,6 @@ endpoints:
     path: /repos/{repo}
     message_type: repo
 
-  - name: repo_requests
+  - name: pull_requests
     path: /repos/{repo}/pulls?state=all&per_page=50
     message_type: pull_request

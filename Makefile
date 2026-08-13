@@ -5,13 +5,13 @@ install:
 	pre-commit install
 
 lint:
-	uvx ruff check .
+	uv run ruff check .
 
 format:
-	uvx ruff format .
+	uv run ruff format .
 
 test:
 	uv run pytest
 
 check: lint test
-	uvx mypy .
+	uv run mypy .
