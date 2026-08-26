@@ -1,5 +1,6 @@
 """Config-driven scraper engine that fetches GitHub data and publishes to Kafka"""
 
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -7,6 +8,7 @@ from scrapers.src.config import ScraperConfig, load_config
 from scrapers.src.github_client import GitHubClient
 from scrapers.src.logging_config import setup_logging
 from scrapers.src.producer import GitHubProducer
+from scrapers.src.validators import validate_message
 
 logger = setup_logging()
 
@@ -35,6 +37,8 @@ class Scraper:
 
                 items = data if isinstance(data, list) else [data]
                 for item in items:
+                    if not validate_message(endpoint.message_type, item):
+                        continue
                     message = self._build_message(repo, endpoint.message_type, item)
                     self.producer.publish(message, key=repo)
                     published += 1
@@ -50,6 +54,7 @@ class Scraper:
         return {
             "message_type": message_type,
             "repo": repo,
+            "scraped_at": datetime.now(UTC).isoformat(),
             "data": data,
         }
 
