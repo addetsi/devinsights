@@ -1,5 +1,6 @@
 """Configuration loading and validation for the scraper."""
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -41,7 +42,7 @@ def load_config(path: Path) -> ScraperConfig:
         source=raw["source"],
         base_url=raw["api"]["base_url"],
         kafka_topic=raw["kafka"]["topic"],
-        bootstrap_servers=raw["kafka"]["bootstrap_servers"],
+        bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", raw["kafka"]["bootstrap_servers"]),
         repositories=raw["repositories"],
         endpoints=endpoints,
     )
