@@ -2,12 +2,14 @@
 
 <!-- Brief description of the change -->
 
-##Area
 
-##Key Changes
+## Area
+
+
+## Key Changes
 
 Checklist
-[]Pre-commit hooks pass locally
-[]CI passes (lint, format, type, check, tests)
-[]Commit message follow convetional format
-[]No secrets or credentials committed(.env gitignored)
+- [] Pre-commit hooks pass locally
+- [] CI passes (lint, format, type, check, tests)
+- [] Commit message follow convetional format
+- [] No secrets or credentials committed(.env gitignored)
