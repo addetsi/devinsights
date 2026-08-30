@@ -227,3 +227,4 @@ profiles.yml
 ml/models/
 .mypy_cache/
 .ruff_cache/
+logs/
