@@ -11,5 +11,5 @@
 Checklist
 - [] Pre-commit hooks pass locally
 - [] CI passes (lint, format, type, check, tests)
-- [] Commit message follow convetional format
+- [] Commit message follow conventional format
 - [] No secrets or credentials committed(.env gitignored)
