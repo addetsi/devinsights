@@ -57,7 +57,7 @@ resource "azurerm_eventhub_namespace" "main" {
   name                = "evhn-${var.project}-${var.environment}-${random_string.suffix.result}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  sku                 = "Basic"
+  sku                 = "Standard"
   capacity            = 1
   tags                = local.common_tags
 }
@@ -158,4 +158,12 @@ resource "azurerm_mssql_firewall_rule" "allow_my_ip" {
   server_id        = azurerm_mssql_server.main.id
   start_ip_address = "141.93.243.1"
   end_ip_address   = "141.93.243.1"
+}
+
+resource "azurerm_key_vault_secret" "blob_connection" {
+  name         = "blob-connection-string"
+  value        = azurerm_storage_account.landing.primary_connection_string
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [azurerm_role_assignment.kv_admin]
 }

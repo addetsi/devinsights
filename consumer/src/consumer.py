@@ -8,6 +8,7 @@ from typing import Any
 from confluent_kafka import Consumer, KafkaError
 
 from consumer.src.sink import FileSink
+from scrapers.src.logging_config import setup_logging
 
 logger = logging.getLogger("consumer")
 
@@ -15,17 +16,27 @@ logger = logging.getLogger("consumer")
 class GitHubConsumer:
     """Consumes messages from a Kafka topic and writes them to a sink."""
 
-    def __init__(self, bootstrap_servers: str, topic: str, group_id: str, sink: FileSink) -> None:
+    def __init__(self, bootstrap_servers: str, topic: str, group_id: str, sink: Any) -> None:
         self.topic = topic
         self.sink = sink
-        self.consumer = Consumer(
-            {
-                "bootstrap.servers": bootstrap_servers,
-                "group.id": group_id,
-                "auto.offset.reset": "earliest",
-                "enable.auto.commit": False,
-            }
-        )
+        config: dict[str, Any] = {
+            "bootstrap.servers": bootstrap_servers,
+            "group.id": group_id,
+            "auto.offset.reset": "earliest",
+            "enable.auto.commit": False,
+        }
+
+        connection_string = os.getenv("EVENTHUB_CONNECTION_STRING")
+        if connection_string:
+            config.update(
+                {
+                    "security.protocol": "SASL_SSL",
+                    "sasl.mechanism": "PLAIN",
+                    "sasl.username": "$ConnectionString",
+                    "sasl.password": connection_string,
+                }
+            )
+        self.consumer = Consumer(config)
 
     def run(self, max_messages: int | None = None) -> int:
         """Consume messages and write them to the sink. Returns count consumed."""
@@ -66,11 +77,19 @@ class GitHubConsumer:
 
 def main() -> None:
     """Entry point: build consumer and run it."""
-    from scrapers.src.logging_config import setup_logging
 
     setup_logging()
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-    sink = FileSink(os.getenv("LANDING_PATH", "/tmp/devinsights-landing"))
+
+    blob_conn = os.getenv("BLOB_CONNECTION_STRING")
+    sink: Any
+    if blob_conn:
+        from consumer.src.blob_sink import BlobSink
+
+        sink = BlobSink(blob_conn)
+    else:
+        sink = FileSink(os.getenv("LANDING_PATH", "/tmp/devinsights-landing"))
+
     consumer = GitHubConsumer(bootstrap, "github-events", "github-consumer", sink)
     consumer.run()
 
