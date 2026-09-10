@@ -5,6 +5,7 @@ description = "Personal DevOps analytics platform on Azure"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "azure-storage-blob>=12.30.1",
     "confluent-kafka>=2.15.0",
     "jsonschema>=4.26.0",
     "python-dotenv>=1.2.2",

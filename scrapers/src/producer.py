@@ -1,6 +1,7 @@
 """Kafka producer for publishing scraped GitHub data to Kafka topics."""
 
 import json
+import os
 from typing import Any
 
 from confluent_kafka import Producer
@@ -15,7 +16,20 @@ class GitHubProducer:
 
     def __init__(self, bootstrap_servers: str, topic: str) -> None:
         self.topic = topic
-        self.producer = Producer({"bootstrap.servers": bootstrap_servers})
+        config: dict[str, Any] = {"bootstrap.servers": bootstrap_servers}
+
+        connection_string = os.getenv("EVENTHUB_CONNECTION_STRING")
+        if connection_string:
+            config.update(
+                {
+                    "security.protocol": "SASL_SSL",
+                    "sasl.mechanism": "PLAIN",
+                    "sasl.username": "$ConnectionString",
+                    "sasl.password": connection_string,
+                }
+            )
+
+        self.producer = Producer(config)
 
     def publish(self, message: dict[str, Any], key: str) -> None:
         """Serialize a message to JSON and publish it to the topic"""
