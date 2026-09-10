@@ -25,3 +25,20 @@ versioning follows [Semantic Versioning](https://semver.org/).
 - Azure SQL Database with firewall rules
 - Connection strings and secrets stored in Key Vault
 - Terraform outputs for resource names
+
+## [0.4.0] - 2026-09-11
+
+### Added
+- Kafka consumer with file sink, manual offset commit (at-least-once)
+- Blob Storage append-blob sink for cloud landing zone
+- Dockerfiles for scraper and consumer
+- Unit tests for consumer, sink, and validators
+- Cloud swap: Event Hubs (SASL_SSL) + Blob Storage integration
+
+## [0.3.0] - 2026-09-5
+
+### Added
+- Config-driven GitHub scraper with Kafka producer
+- JSON schema validation at ingestion boundary
+- Scrape timestamp on each message
+- Local-first development against containerized Kafka
