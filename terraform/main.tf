@@ -156,8 +156,8 @@ resource "azurerm_mssql_firewall_rule" "allow_azure" {
 resource "azurerm_mssql_firewall_rule" "allow_my_ip" {
   name             = "AllowMyIP"
   server_id        = azurerm_mssql_server.main.id
-  start_ip_address = "83.86.223.14"
-  end_ip_address   = "83.86.223.14"
+  start_ip_address = "141.93.241.1"
+  end_ip_address   = "141.93.241.1"
 }
 
 resource "azurerm_key_vault_secret" "blob_connection" {

@@ -27,3 +27,4 @@ models:
       +materialized: view
     gold:
       +materialized: table
+      +as_columnstore: false

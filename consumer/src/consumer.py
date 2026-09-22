@@ -90,7 +90,7 @@ def main() -> None:
     else:
         sink = FileSink(os.getenv("LANDING_PATH", "/tmp/devinsights-landing"))
 
-    consumer = GitHubConsumer(bootstrap, "github-events", "github-consumer", sink)
+    consumer = GitHubConsumer(bootstrap, "github-events", "github-consumer-v3", sink)
     consumer.run()
 
 
