@@ -85,8 +85,8 @@ resource "azurerm_eventhub_authorization_rule" "consumer" {
   eventhub_name       = azurerm_eventhub.github.name
   resource_group_name = azurerm_resource_group.main.name
   listen              = true
-  send                = false
-  manage              = false
+  send                = true
+  manage              = true
 }
 
 
@@ -156,8 +156,8 @@ resource "azurerm_mssql_firewall_rule" "allow_azure" {
 resource "azurerm_mssql_firewall_rule" "allow_my_ip" {
   name             = "AllowMyIP"
   server_id        = azurerm_mssql_server.main.id
-  start_ip_address = "141.93.243.1"
-  end_ip_address   = "141.93.243.1"
+  start_ip_address = "83.86.223.14"
+  end_ip_address   = "83.86.223.14"
 }
 
 resource "azurerm_key_vault_secret" "blob_connection" {
