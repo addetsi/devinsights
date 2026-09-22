@@ -228,3 +228,5 @@ ml/models/
 .mypy_cache/
 .ruff_cache/
 logs/
+set_env.sh
+.user.yml

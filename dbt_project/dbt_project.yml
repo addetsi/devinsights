@@ -1,0 +1,29 @@
+name: devinsights
+version: 1.0.0
+profile: devinsights
+
+vars:
+  bronze_tables:
+    raw_github_events:
+      source_name: raw
+      columns:
+        - id
+        - message_type
+        - repo
+        - scraped_at
+        - payload
+        - loaded_at
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+
+models:
+  devinsights:
+    bronze:
+      +materialized: view
+    silver:
+      +materialized: view
+    gold:
+      +materialized: table

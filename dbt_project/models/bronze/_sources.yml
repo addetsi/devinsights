@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: dbo
+    tables:
+      - name: raw_github_events
+        description: "Raw GitHub events loaded from Blob strage by the loader"
