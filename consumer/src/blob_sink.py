@@ -26,10 +26,11 @@ class BlobSink:
 
         blob_client = self.service.get_blob_client(container=self.container, blob=blob_path)
 
-        try:
-            blob_client.create_append_blob()
-        except ResourceExistsError:
-            logger.debug("Resource already exists")
+        if not blob_client.exists():
+            try:
+                blob_client.create_append_blob()
+            except ResourceExistsError:
+                logger.debug("Resource already exists")
 
         line = (json.dumps(message) + "\n").encode("utf-8")
         blob_client.append_block(line)

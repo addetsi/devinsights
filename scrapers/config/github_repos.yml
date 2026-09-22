@@ -14,6 +14,13 @@ repositories:
   - hashicorp/terraform
   - pallets/flask
   - fastapi/fastapi
+  - microsoft/vscode
+  - facebook/react
+  - langchain-ai/langchain
+  - openai/openai-python
+  - pandas-dev/pandas
+  - kubernetes/kubernetes
+  - tensorflow/tensorflow
 
 endpoints:
   - name: repo_metadata

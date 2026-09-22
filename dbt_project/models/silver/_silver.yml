@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: silver_repos
+    description: "Deduplicated, typed repository metadata (latest snapshot per repo)"
+    columns:
+      - name: repo
+        description: "Full repo name (owner/name)"
+        tests:
+          - not_null
+          - unique
+      - name: stars
+        description: "Star count"
+        tests:
+          - not_null
+      - name: default_branch
+        tests:
+          - not_null
+
+  - name: silver_pull_requests
+    description: "Deduplicated, typed pull request data (latest snapshot per PR)"
+    columns:
+      - name: pr_number
+        tests:
+          - not_null
+      - name: state
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['open', 'closed']

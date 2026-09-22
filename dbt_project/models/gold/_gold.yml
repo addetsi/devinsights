@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: repo_summary
+    description: "Per-repo health overview joining metadata and PR stats"
+    columns:
+      - name: repo
+        tests:
+          - not_null
+          - unique
+
+  - name: metrics_dora
+    description: "DORA lead-time metrics per repo"
+    columns:
+      - name: repo
+        tests:
+          - not_null
+
+  - name: controls_pr_review
+    description: "PR activity compliance control per repo"
+    columns:
+      - name: repo
+        tests:
+          - not_null
+      - name: has_pr_activity
+        tests:
+          - accepted_values:
+             arguments:
+               values: ['PASS', 'FAIL']
