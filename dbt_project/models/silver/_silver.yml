@@ -29,3 +29,24 @@ models:
           - accepted_values:
               arguments:
                 values: ['open', 'closed']
+  - name: silver_commits
+    description: "Deduplicated commit data (latest snapshot per commit sha)"
+    columns:
+      - name: sha
+        tests: [not_null]
+      - name: repo
+        tests: [not_null]
+
+  - name: silver_releases
+    description: "Deduplicated release data (latest snapshot per release)"
+    columns:
+      - name: release_id
+        tests: [not_null]
+      - name: repo
+        tests: [not_null]
+
+  - name: silver_branch_protection
+    description: "Branch protection settings per repo (sparse — many repos inaccessible)"
+    columns:
+      - name: repo
+        tests: [not_null, unique]
