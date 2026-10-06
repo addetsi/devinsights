@@ -78,36 +78,36 @@ repositories:
   - git/git
   - torvalds/linux
   - llvm/llvm-project
-  - rust-lang/rust
-  - golang/go
-  - nodejs/node
-  - denoland/deno
-  - oven-sh/bun
-  - microsoft/TypeScript
-  - vercel/next.js
-  - vuejs/core
-  - angular/angular
-  - sveltejs/svelte
-  - remix-run/react-router
-  - reduxjs/redux
-  - vitejs/vite
-  - webpack/webpack
-  - eslint/eslint
-  - prettier/prettier
-  - tailwindlabs/tailwindcss
-  - mui/material-ui
-  - electron/electron
-  - tauri-apps/tauri
-  - flutter/flutter
-  - dotnet/runtime
-  - spring-projects/spring-boot
-  - rails/rails
-  - laravel/framework
-  - symfony/symfony
-  - home-assistant/core
-  - neovim/neovim
-  - apache/superset
-  - getredash/redash
+  # - rust-lang/rust
+  # - golang/go
+  # - nodejs/node
+  # - denoland/deno
+  # - oven-sh/bun
+  # - microsoft/TypeScript
+  # - vercel/next.js
+  # - vuejs/core
+  # - angular/angular
+  # - sveltejs/svelte
+  # - remix-run/react-router
+  # - reduxjs/redux
+  # - vitejs/vite
+  # - webpack/webpack
+  # - eslint/eslint
+  # - prettier/prettier
+  # - tailwindlabs/tailwindcss
+  # - mui/material-ui
+  # - electron/electron
+  # - tauri-apps/tauri
+  # - flutter/flutter
+  # - dotnet/runtime
+  # - spring-projects/spring-boot
+  # - rails/rails
+  # - laravel/framework
+  # - symfony/symfony
+  # - home-assistant/core
+  # - neovim/neovim
+  # - apache/superset
+  # - getredash/redash
 
 endpoints:
   - name: repo_metadata
@@ -117,3 +117,15 @@ endpoints:
   - name: pull_requests
     path: /repos/{repo}/pulls?state=all&per_page=50
     message_type: pull_request
+
+  - name: commits
+    path: /repos/{repo}/commits?per_page=100
+    message_type: commit
+
+  - name: release
+    path: /repos/{repo}/releases?per_page=50
+    message_type: release
+
+  - name: branch_protection
+    path: /repos/{repo}/branches/main/protection
+    message_type: branch_protection
