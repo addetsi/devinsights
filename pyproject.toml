@@ -9,12 +9,14 @@ dependencies = [
     "confluent-kafka>=2.15.0",
     "dbt-core>=1.12.5",
     "dbt-sqlserver>=1.11.1",
+    "joblib>=1.6.0",
     "jsonschema>=4.26.0",
     "pandas>=3.0.6",
     "pyodbc>=5.3.0",
     "python-dotenv>=1.2.2",
     "pyyaml>=6.0.3",
     "requests>=2.34.2",
+    "scikit-learn>=1.9.1",
     "sqlalchemy>=2.1.1",
     "streamlit>=1.64.0",
 ]
@@ -46,9 +48,8 @@ disallow_untyped_defs = true
 ignore_missing_imports = false
 explicit_package_bases = true
 namespace_packages = true
-mypy_path = ["streamlit_app"]
 [[tool.mypy.overrides]]
-module = ["dotenv", "confluent_kafka", "pyodbc", "pandas"]
+module = ["dotenv", "confluent_kafka", "pyodbc", "pandas", "joblib", "sklearn.ensemble", "sklearn.preprocessing"]
 ignore_missing_imports = true
 
 [dependency-groups]

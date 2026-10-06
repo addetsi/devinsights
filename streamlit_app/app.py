@@ -1,7 +1,8 @@
 """DevInsights dashboard - GitHub repository compliance and DORA metrics."""
 
 import streamlit as st
-from utils.db_connection import query_df
+
+from streamlit_app.utils.db_connection import query_df
 
 st.set_page_config(page_title="DevInsights", layout="wide")
 
