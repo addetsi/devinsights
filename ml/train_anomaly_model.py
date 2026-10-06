@@ -16,7 +16,6 @@ MODEL_PATH = "ml/models/anomaly_model.joblib"
 SCALER_PATH = "ml/models/scaler.joblib"
 FEATURE_COLS = [
     "commits_per_week",
-    "pr_opened_per_week",
     "commits_rolling_avg",
     "commits_wow_change",
 ]
@@ -44,6 +43,8 @@ def train() -> None:
     df = query_df(
         "SELECT repo, yr, wk, commits_per_week, prs_opened_per_week FROM dbo.gold_weekly_activity"
     )
+    df = df[df["commits_per_week"] > 0].copy()  # only weeks with real commit data
+    logger.info("Loaded %d weekly activity rows with commits", len(df))
     logger.info("Loaded %d weekly activity rows", len(df))
 
     df = build_features(df)

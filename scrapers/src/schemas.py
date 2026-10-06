@@ -28,4 +28,37 @@ PULL_REQUEST_SCHEMA: dict[str, Any] = {
     },
 }
 
-SCHEMAS: dict[str, dict[str, Any]] = {"repo": REPO_SCHEMA, "pull_request": PULL_REQUEST_SCHEMA}
+COMMIT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "required": ["sha", "commit"],
+    "properties": {
+        "sha": {"type": "string"},
+        "commit": {"type": "object"},
+    },
+}
+
+RELEASE_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "required": ["id", "tag_name"],
+    "properties": {
+        "id": {"type": "integer"},
+        "tag_name": {"type": "string"},
+        "published_at": {"type": ["string", "null"]},
+    },
+}
+
+BRANCH_PROTECTION_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "required_pull_request_reviews": {"type": "object"},
+        "enforce_admins": {"type": "object"},
+    },
+}
+
+SCHEMAS: dict[str, dict[str, Any]] = {
+    "repo": REPO_SCHEMA,
+    "pull_request": PULL_REQUEST_SCHEMA,
+    "commit": COMMIT_SCHEMA,
+    "release": RELEASE_SCHEMA,
+    "branch_protection": BRANCH_PROTECTION_SCHEMA,
+}

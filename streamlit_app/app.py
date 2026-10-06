@@ -25,9 +25,18 @@ def load_dora():  # type: ignore[no-untyped-def]
     return query_df("SELECT * FROM dbo.metrics_dora")
 
 
+@st.cache_data(ttl=300)
+def load_anomalies():  # type: ignore[no-untyped-def]
+    return query_df(
+        "SELECT repo, yr, wk, commits_per_week, anomaly_score, flagged "
+        "FROM dbo.anomaly_scores WHERE flagged = 1 ORDER BY anomaly_score ASC"
+    )
+
+
 repos = load_repo_summary()
 dora = load_dora()
 controls = load_controls()
+anomalies = load_anomalies()
 
 # Top-level metrics
 col1, col2, col3 = st.columns(3)
@@ -36,7 +45,20 @@ col2.metric("Total PRs", int(repos["total_prs"].sum()))
 passing = (controls["has_pr_activity"] == "PASS").sum()
 col3.metric("Passing Controls", f"{passing}/{len(controls)}")
 
+
 st.divider()
+
+st.subheader("Anomaly Alerts")
+st.caption("Repo-weeks with unusual commit activity (flagged by Isolation Forest)")
+
+if len(anomalies) == 0:
+    st.success("No anomalies detected.")
+else:
+    st.warning(f"{len(anomalies)} anomalous repo-weeks flagged")
+    st.dataframe(
+        anomalies[["repo", "yr", "wk", "commits_per_week", "anomaly_score"]],
+        use_container_width=True,
+    )
 
 # Sidebar filters
 st.sidebar.header("Filters")

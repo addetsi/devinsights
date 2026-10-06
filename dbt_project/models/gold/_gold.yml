@@ -27,3 +27,29 @@ models:
           - accepted_values:
              arguments:
                values: ['PASS', 'FAIL']
+  - name: gold_weekly_activity
+    description: "Weekly commit and PR counts per repo — ML anomaly detection features"
+    columns:
+      - name: repo
+        tests: [not_null]
+      - name: commits_per_week
+        tests: [not_null]
+      - name: prs_opened_per_week
+        tests: [not_null]
+
+  - name: metrics_deployment_frequency
+    description: "Deployment frequency proxy from releases per repo"
+    columns:
+      - name: repo
+        tests: [not_null, unique]
+
+  - name: controls_branch_protection
+    description: "Branch protection compliance control (sparse coverage)"
+    columns:
+      - name: repo
+        tests: [not_null, unique]
+      - name: branch_protection_status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['PASS', 'FAIL']
