@@ -8,7 +8,10 @@ import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 
-from streamlit_app.utils.db_connection import query_df
+from common.db_connection import query_df
+from common.logging_config import setup_logging
+
+setup_logging()
 
 logger = logging.getLogger("ml")
 
@@ -70,8 +73,6 @@ def train() -> None:
 
 
 def main() -> None:
-    from scrapers.src.logging_config import setup_logging
-
     setup_logging()
     train()
 

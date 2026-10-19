@@ -5,9 +5,11 @@ import logging
 import joblib
 import pandas as pd
 
+from common.db_connection import get_engine, query_df
+from common.logging_config import setup_logging
 from ml.train_anomaly_model import FEATURE_COLS, MODEL_PATH, SCALER_PATH, build_features
-from streamlit_app.utils.db_connection import get_engine, query_df
 
+setup_logging()
 logger = logging.getLogger("ml")
 
 RESULTS_TABLE = "anomaly_scores"
@@ -46,8 +48,6 @@ def write_results(df: pd.DataFrame) -> None:
 
 
 def main() -> None:
-    from scrapers.src.logging_config import setup_logging
-
     setup_logging()
     df = predict()
     write_results(df)

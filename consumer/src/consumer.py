@@ -7,9 +7,10 @@ from typing import Any
 
 from confluent_kafka import Consumer, KafkaError
 
+from common.logging_config import setup_logging
 from consumer.src.sink import FileSink
-from scrapers.src.logging_config import setup_logging
 
+setup_logging()
 logger = logging.getLogger("consumer")
 
 

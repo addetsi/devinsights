@@ -13,6 +13,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Copy the scraper source code and config
+COPY common/ ./common/
 COPY scrapers/ ./scrapers/
 
 #Run the scraper when the container starts

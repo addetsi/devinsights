@@ -7,8 +7,9 @@ import os
 import pyodbc
 from azure.storage.blob import BlobServiceClient
 
-from scrapers.src.logging_config import setup_logging
+from common.logging_config import setup_logging
 
+setup_logging()
 logger = logging.getLogger("loader")
 
 RAW_TABLE = "raw_github_events"
