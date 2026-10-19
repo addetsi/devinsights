@@ -10,6 +10,5 @@ RUN uv sync --frozen --no-dev
 
 COPY common/ ./common/
 COPY consumer/ ./consumer/
-COPY scrapers/ ./scrapers/
 
 CMD ["uv", "run", "python", "-m", "consumer.src.consumer"]
