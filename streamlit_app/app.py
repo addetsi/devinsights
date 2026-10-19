@@ -2,7 +2,7 @@
 
 import streamlit as st
 
-from streamlit_app.utils.db_connection import query_df
+from common.db_connection import query_df
 
 st.set_page_config(page_title="DevInsights", layout="wide")
 

@@ -4,9 +4,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from common.logging_config import setup_logging
 from scrapers.src.config import ScraperConfig, load_config
 from scrapers.src.github_client import GitHubClient
-from scrapers.src.logging_config import setup_logging
 from scrapers.src.producer import GitHubProducer
 from scrapers.src.validators import validate_message
 

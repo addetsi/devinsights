@@ -1,14 +1,16 @@
 """Kafka producer for publishing scraped GitHub data to Kafka topics."""
 
 import json
+import logging
 import os
 from typing import Any
 
 from confluent_kafka import Producer
 
-from scrapers.src.logging_config import setup_logging
+from common.logging_config import setup_logging
 
-logger = setup_logging()
+setup_logging()
+logger = logging.getLogger("producer")
 
 
 class GitHubProducer:
