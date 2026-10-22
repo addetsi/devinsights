@@ -156,8 +156,8 @@ resource "azurerm_mssql_firewall_rule" "allow_azure" {
 resource "azurerm_mssql_firewall_rule" "allow_my_ip" {
   name             = "AllowMyIP"
   server_id        = azurerm_mssql_server.main.id
-  start_ip_address = "141.93.243.19"
-  end_ip_address   = "141.93.243.19"
+  start_ip_address = "83.86.223.14"
+  end_ip_address   = "83.86.223.14"
 }
 
 resource "azurerm_key_vault_secret" "blob_connection" {
@@ -166,4 +166,71 @@ resource "azurerm_key_vault_secret" "blob_connection" {
   key_vault_id = azurerm_key_vault.main.id
 
   depends_on = [azurerm_role_assignment.kv_admin]
+}
+
+resource "azurerm_container_registry" "main" {
+  name                = "acr${var.project}${random_string.suffix.result}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  sku                 = "Basic"
+  admin_enabled       = false
+  tags                = local.common_tags
+}
+
+resource "azurerm_user_assigned_identity" "containers" {
+  name                = "id-${local.name_prefix}-containers"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  tags                = local.common_tags
+}
+
+resource "azurerm_role_assignment" "container_kv" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key vault secrets user"
+  principal_id         = azurerm_user_assigned_identity.containers.principal_id
+
+}
+
+resource "azurerm_role_assignment" "container_acr" {
+  scope                = azurerm_container_registry.main.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_user_assigned_identity.containers.principal_id
+}
+
+resource "azurerm_container_group" "scraper" {
+  name                = "ci-${local.name_prefix}-scraper"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  os_type             = "Linux"
+  restart_policy      = "Never"
+
+  image_registry_credential {
+    server                    = azurerm_container_registry.main.login_server
+    user_assigned_identity_id = azurerm_user_assigned_identity.containers.id
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.containers.id]
+  }
+
+  container {
+    name   = "scraper"
+    image  = "${azurerm_container_registry.main.login_server}/scraper:latest"
+    cpu    = "0.5"
+    memory = "1.0"
+
+    environment_variables = {
+      KAFKA_BOOTSTRAP_SERVERS = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
+      KEY_VAULT_NAME          = azurerm_key_vault.main.name
+      AZURE_CLIENT_ID           = azurerm_user_assigned_identity.containers.client_id
+    }
+
+    ports {
+      port     = 80
+      protocol = "TCP"
+    }
+  }
+
+  tags = local.common_tags
 }

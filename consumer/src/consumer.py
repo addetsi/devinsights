@@ -8,6 +8,7 @@ from typing import Any
 from confluent_kafka import Consumer, KafkaError
 
 from common.logging_config import setup_logging
+from common.secrets import get_secret
 from consumer.src.sink import FileSink
 
 setup_logging()
@@ -27,7 +28,7 @@ class GitHubConsumer:
             "enable.auto.commit": False,
         }
 
-        connection_string = os.getenv("EVENTHUB_CONNECTION_STRING")
+        connection_string = get_secret("eventhub-consumer-connection", "EVENTHUB_CONNECTION_STRING")
         if connection_string:
             config.update(
                 {
@@ -82,7 +83,7 @@ def main() -> None:
     setup_logging()
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 
-    blob_conn = os.getenv("BLOB_CONNECTION_STRING")
+    blob_conn = get_secret("blob-connection-string", "BLOB_CONNECTION_STRING")
     sink: Any
     if blob_conn:
         from consumer.src.blob_sink import BlobSink
