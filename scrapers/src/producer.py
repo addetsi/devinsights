@@ -2,12 +2,12 @@
 
 import json
 import logging
-import os
 from typing import Any
 
 from confluent_kafka import Producer
 
 from common.logging_config import setup_logging
+from common.secrets import get_secret
 
 setup_logging()
 logger = logging.getLogger("producer")
@@ -20,7 +20,7 @@ class GitHubProducer:
         self.topic = topic
         config: dict[str, Any] = {"bootstrap.servers": bootstrap_servers}
 
-        connection_string = os.getenv("EVENTHUB_CONNECTION_STRING")
+        connection_string = get_secret("eventhub-producer-connection", "EVENTHUB_CONNECTION_STRING")
         if connection_string:
             config.update(
                 {

@@ -3,10 +3,16 @@
 import json
 from typing import Any
 
+import pytest
 from pytest_mock import MockerFixture
 
 from consumer.src.consumer import GitHubConsumer
 from consumer.src.sink import FileSink
+
+
+@pytest.fixture(autouse=True)
+def mock_secrets(mocker: MockerFixture) -> None:
+    mocker.patch("consumer.src.consumer.get_secret", return_value=None)
 
 
 class FakeMessage:

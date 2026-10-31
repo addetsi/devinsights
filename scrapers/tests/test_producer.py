@@ -1,8 +1,14 @@
 """Tests for the Kafka producer."""
 
+import pytest
 from pytest_mock import MockerFixture
 
 from scrapers.src.producer import GitHubProducer
+
+
+@pytest.fixture(autouse=True)
+def mock_secrets(mocker: MockerFixture) -> None:
+    mocker.patch("scrapers.src.producer.get_secret", return_value=None)
 
 
 def test_publish_produces_encoded_message(mocker: MockerFixture) -> None:
