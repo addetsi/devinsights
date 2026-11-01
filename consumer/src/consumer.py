@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import time
 from typing import Any
 
 from confluent_kafka import Consumer, KafkaError
@@ -40,18 +41,25 @@ class GitHubConsumer:
             )
         self.consumer = Consumer(config)
 
-    def run(self, max_messages: int | None = None) -> int:
+    def run(self, max_messages: int | None = None, idle_timeout: float = 30.0) -> int:
         """Consume messages and write them to the sink. Returns count consumed."""
         self.consumer.subscribe([self.topic])
         consumed = 0
+        last_message_time = time.monotonic()
         try:
             while True:
                 msg = self.consumer.poll(timeout=1.0)
 
                 if msg is None:
-                    if max_messages is None:
-                        continue
-                    break
+                    if (
+                        max_messages is None
+                        and (time.monotonic() - last_message_time) > idle_timeout
+                    ):
+                        logger.info("No message for %0.fs, assuming drained", idle_timeout)
+                        break
+                    if max_messages is not None:
+                        break
+                    continue
 
                 error = msg.error()
                 if error is not None:
@@ -69,6 +77,10 @@ class GitHubConsumer:
                 self.sink.write(data)
                 self.consumer.commit(message=msg)
                 consumed += 1
+                last_message_time = time.monotonic()
+
+                if max_messages is not None and consumed >= max_messages:
+                    break
 
         finally:
             self.consumer.close()
