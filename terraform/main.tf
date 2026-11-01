@@ -110,7 +110,7 @@ resource "azurerm_key_vault_secret" "eventhub_consumer" {
 resource "random_password" "sql_admin" {
   length           = 24
   special          = true
-  override_special = "!#$%&*()-_=+[]{}"
+  override_special = "!#$%*_-+"
 }
 
 resource "azurerm_mssql_server" "main" {
@@ -146,6 +146,13 @@ resource "azurerm_key_vault_secret" "sql_connection_string" {
   depends_on = [azurerm_role_assignment.kv_admin]
 }
 
+resource "azurerm_key_vault_secret" "sql_server_fqdn" {
+  name         = "sql-server-fqdn"
+  value        = azurerm_mssql_server.main.fully_qualified_domain_name
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [azurerm_role_assignment.kv_admin]
+}
 resource "azurerm_mssql_firewall_rule" "allow_azure" {
   name             = "AllowAzureServices"
   server_id        = azurerm_mssql_server.main.id
@@ -223,7 +230,82 @@ resource "azurerm_container_group" "scraper" {
     environment_variables = {
       KAFKA_BOOTSTRAP_SERVERS = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
       KEY_VAULT_NAME          = azurerm_key_vault.main.name
-      AZURE_CLIENT_ID           = azurerm_user_assigned_identity.containers.client_id
+      AZURE_CLIENT_ID         = azurerm_user_assigned_identity.containers.client_id
+    }
+
+    ports {
+      port     = 80
+      protocol = "TCP"
+    }
+  }
+
+  tags = local.common_tags
+}
+
+resource "azurerm_container_group" "consumer" {
+  name                = "ci-${local.name_prefix}-consumer"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  os_type             = "Linux"
+  restart_policy      = "Never"
+
+  image_registry_credential {
+    server                    = azurerm_container_registry.main.login_server
+    user_assigned_identity_id = azurerm_user_assigned_identity.containers.id
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.containers.id]
+  }
+
+  container {
+    name   = "consumer"
+    image  = "${azurerm_container_registry.main.login_server}/consumer:latest"
+    cpu    = "0.5"
+    memory = "1.0"
+
+    environment_variables = {
+      KAFKA_BOOTSTRAP_SERVERS = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
+      KEY_VAULT_NAME          = azurerm_key_vault.main.name
+      AZURE_CLIENT_ID         = azurerm_user_assigned_identity.containers.client_id
+    }
+
+    ports {
+      port     = 80
+      protocol = "TCP"
+    }
+  }
+
+  tags = local.common_tags
+}
+
+resource "azurerm_container_group" "transform" {
+  name                = "ci-${local.name_prefix}-transform"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  os_type             = "Linux"
+  restart_policy      = "Never"
+
+  image_registry_credential {
+    server                    = azurerm_container_registry.main.login_server
+    user_assigned_identity_id = azurerm_user_assigned_identity.containers.id
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.containers.id]
+  }
+
+  container {
+    name   = "transform"
+    image  = "${azurerm_container_registry.main.login_server}/transform:latest"
+    cpu    = "1.0"
+    memory = "2.0"
+
+    environment_variables = {
+      KEY_VAULT_NAME  = azurerm_key_vault.main.name
+      AZURE_CLIENT_ID = azurerm_user_assigned_identity.containers.client_id
     }
 
     ports {

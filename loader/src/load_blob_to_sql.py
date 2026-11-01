@@ -2,12 +2,12 @@
 
 import json
 import logging
-import os
 
 import pyodbc
 from azure.storage.blob import BlobServiceClient
 
 from common.logging_config import setup_logging
+from common.secrets import get_secret
 
 setup_logging()
 logger = logging.getLogger("loader")
@@ -31,10 +31,10 @@ def get_sql_connection() -> pyodbc.Connection:
     """Build a pyodbc connection to Azure SQL from environment variables."""
     conn_str = (
         f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-        f"SERVER={os.environ['SQL_SERVER']};"
-        f"DATABASE={os.environ['SQL_DATABASE']};"
-        f"UID={os.environ['SQL_USER']};"
-        f"PWD={os.environ['SQL_PASSWORD']};"
+        f"SERVER={get_secret('sql-server-fqdn', 'SQL_SERVER')};"
+        f"DATABASE=sqldb-devinsights-dev;"
+        f"UID=sqladmin;"
+        f"PWD={{{get_secret('sql-admin-password', 'SQL_PASSWORD')}}};"
         f"Encrypt=yes;TrustServerCertificate=no;"
     )
     return pyodbc.connect(conn_str)
@@ -42,7 +42,9 @@ def get_sql_connection() -> pyodbc.Connection:
 
 def load() -> int:
     """Real all JSONL blobs from the raw container and insert into SQL"""
-    blob_conn = os.environ["BLOB_CONNECTION_STRING"]
+    blob_conn = get_secret("blob-connection-string", "BLOB_CONNECTION_STRING")
+    if blob_conn is None:
+        raise RuntimeError("Blob connection string not found")
     service = BlobServiceClient.from_connection_string(blob_conn)
     container = service.get_container_client("raw")
 
