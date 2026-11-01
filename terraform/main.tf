@@ -204,92 +204,34 @@ resource "azurerm_role_assignment" "container_acr" {
   principal_id         = azurerm_user_assigned_identity.containers.principal_id
 }
 
-resource "azurerm_container_group" "scraper" {
-  name                = "ci-${local.name_prefix}-scraper"
+resource "azurerm_log_analytics_workspace" "main" {
+  name                = "log-${local.name_prefix}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  os_type             = "Linux"
-  restart_policy      = "Never"
-
-  image_registry_credential {
-    server                    = azurerm_container_registry.main.login_server
-    user_assigned_identity_id = azurerm_user_assigned_identity.containers.id
-  }
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.containers.id]
-  }
-
-  container {
-    name   = "scraper"
-    image  = "${azurerm_container_registry.main.login_server}/scraper:latest"
-    cpu    = "0.5"
-    memory = "1.0"
-
-    environment_variables = {
-      KAFKA_BOOTSTRAP_SERVERS = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
-      KEY_VAULT_NAME          = azurerm_key_vault.main.name
-      AZURE_CLIENT_ID         = azurerm_user_assigned_identity.containers.client_id
-    }
-
-    ports {
-      port     = 80
-      protocol = "TCP"
-    }
-  }
-
-  tags = local.common_tags
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+  tags                = local.common_tags
 }
 
-resource "azurerm_container_group" "consumer" {
-  name                = "ci-${local.name_prefix}-consumer"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-  os_type             = "Linux"
-  restart_policy      = "Never"
-
-  image_registry_credential {
-    server                    = azurerm_container_registry.main.login_server
-    user_assigned_identity_id = azurerm_user_assigned_identity.containers.id
-  }
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.containers.id]
-  }
-
-  container {
-    name   = "consumer"
-    image  = "${azurerm_container_registry.main.login_server}/consumer:latest"
-    cpu    = "0.5"
-    memory = "1.0"
-
-    environment_variables = {
-      KAFKA_BOOTSTRAP_SERVERS = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
-      KEY_VAULT_NAME          = azurerm_key_vault.main.name
-      AZURE_CLIENT_ID         = azurerm_user_assigned_identity.containers.client_id
-    }
-
-    ports {
-      port     = 80
-      protocol = "TCP"
-    }
-  }
-
-  tags = local.common_tags
+resource "azurerm_container_app_environment" "main" {
+  name                       = "cae-${local.name_prefix}"
+  resource_group_name        = azurerm_resource_group.main.name
+  location                   = azurerm_resource_group.main.location
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+  tags                       = local.common_tags
 }
 
-resource "azurerm_container_group" "transform" {
-  name                = "ci-${local.name_prefix}-transform"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-  os_type             = "Linux"
-  restart_policy      = "Never"
+resource "azurerm_container_app_job" "pipeline" {
+  name                         = "caj-${local.name_prefix}-pipeline"
+  resource_group_name          = azurerm_resource_group.main.name
+  location                     = azurerm_resource_group.main.location
+  container_app_environment_id = azurerm_container_app_environment.main.id
 
-  image_registry_credential {
-    server                    = azurerm_container_registry.main.login_server
-    user_assigned_identity_id = azurerm_user_assigned_identity.containers.id
+  replica_timeout_in_seconds = 1800
+  replica_retry_limit        = 1
+
+  schedule_trigger_config {
+    cron_expression = "0 6 * * *"
   }
 
   identity {
@@ -297,20 +239,30 @@ resource "azurerm_container_group" "transform" {
     identity_ids = [azurerm_user_assigned_identity.containers.id]
   }
 
-  container {
-    name   = "transform"
-    image  = "${azurerm_container_registry.main.login_server}/transform:latest"
-    cpu    = "1.0"
-    memory = "2.0"
+  registry {
+    server   = azurerm_container_registry.main.login_server
+    identity = azurerm_user_assigned_identity.containers.id
+  }
 
-    environment_variables = {
-      KEY_VAULT_NAME  = azurerm_key_vault.main.name
-      AZURE_CLIENT_ID = azurerm_user_assigned_identity.containers.client_id
-    }
+  template {
+    container {
+      name   = "pipeline"
+      image  = "${azurerm_container_registry.main.login_server}/pipeline:latest"
+      cpu    = 1.0
+      memory = "2Gi"
 
-    ports {
-      port     = 80
-      protocol = "TCP"
+      env {
+        name  = "KAFKA_BOOTSTRAP_SERVERS"
+        value = "${azurerm_eventhub_namespace.main.name}.servicebus.windows.net:9093"
+      }
+      env {
+        name  = "KEY_VAULT_NAME"
+        value = azurerm_key_vault.main.name
+      }
+      env {
+        name  = "AZURE_CLIENT_ID"
+        value = azurerm_user_assigned_identity.containers.client_id
+      }
     }
   }
 
