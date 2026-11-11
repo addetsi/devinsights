@@ -1,9 +1,10 @@
 """Database connection for the Streamlit dashboard."""
 
+from typing import Any
 from urllib.parse import quote_plus
 
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
 from common.secrets import get_secret
@@ -27,8 +28,8 @@ def get_engine() -> Engine:
     return create_engine(f"mssql+pyodbc:///?odbc_connect={params}")
 
 
-def query_df(query: str) -> pd.DataFrame:
+def query_df(query: str, params: dict[str, Any] | None = None) -> pd.DataFrame:
     """Run a SQL query and return the result as a DataFrame."""
     engine = get_engine()
     with engine.connect() as connection:
-        return pd.read_sql(query, connection)
+        return pd.read_sql(text(query), connection, params=params or {})

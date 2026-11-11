@@ -54,21 +54,32 @@ def load() -> int:
     conn.commit()
 
     inserted = 0
+
+    cursor.fast_executemany = True
+    rows = []
     for blob in container.list_blobs():
         data = container.download_blob(blob.name).readall().decode("utf-8")
         for line in data.strip().split("\n"):
             if not line:
                 continue
             record = json.loads(line)
-            cursor.execute(
-                f"INSERT INTO {RAW_TABLE} (message_type, repo, scraped_at, payload) "
-                "VALUES (?, ?, ?, ?)",
-                record.get("message_type"),
-                record.get("repo"),
-                record.get("scraped_at"),
-                json.dumps(record.get("data")),
+            rows.append(
+                (
+                    record.get("message_type"),
+                    record.get("repo"),
+                    record.get("scraped_at"),
+                    json.dumps(record.get("data")),
+                )
             )
-            inserted += 1
+
+    insert_sql = (
+        f"INSERT INTO {RAW_TABLE} (message_type, repo, scraped_at, payload) VALUES (?, ?, ?, ?)"
+    )
+    batch = 1000
+    for i in range(0, len(rows), batch):
+        cursor.executemany(insert_sql, rows[i : i + batch])
+    conn.commit()
+    inserted = len(rows)
 
     conn.commit()
     cursor.close()
