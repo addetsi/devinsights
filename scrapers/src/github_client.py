@@ -1,14 +1,15 @@
 """Client for fetching data from the GitHub REST API."""
 
-import os
 from typing import Any
 
 import requests
 from dotenv import load_dotenv
 
+from common.secrets import get_secret
+
 load_dotenv()  # Load environment variables from .env file
 
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+GITHUB_TOKEN = get_secret("github-token", "GITHUB_TOKEN")
 
 
 class GitHubClient:

@@ -41,7 +41,7 @@ resource "azurerm_key_vault" "main" {
   location                   = azurerm_resource_group.main.location
   tenant_id                  = data.azurerm_client_config.current.tenant_id
   sku_name                   = "standard"
-  enable_rbac_authorization  = true
+  rbac_authorization_enabled = true
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
   tags                       = local.common_tags
@@ -163,8 +163,8 @@ resource "azurerm_mssql_firewall_rule" "allow_azure" {
 resource "azurerm_mssql_firewall_rule" "allow_my_ip" {
   name             = "AllowMyIP"
   server_id        = azurerm_mssql_server.main.id
-  start_ip_address = "83.86.223.14"
-  end_ip_address   = "83.86.223.14"
+  start_ip_address = "141.93.243.1"
+  end_ip_address   = "141.93.243.1"
 }
 
 resource "azurerm_key_vault_secret" "blob_connection" {
@@ -227,7 +227,7 @@ resource "azurerm_container_app_job" "pipeline" {
   location                     = azurerm_resource_group.main.location
   container_app_environment_id = azurerm_container_app_environment.main.id
 
-  replica_timeout_in_seconds = 1800
+  replica_timeout_in_seconds = 16000
   replica_retry_limit        = 1
 
   schedule_trigger_config {
